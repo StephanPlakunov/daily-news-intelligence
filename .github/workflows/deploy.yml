@@ -28,11 +28,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build frontend bundle
-        run: npm run build:frontend
-        env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
-
       - name: Build backend bundle
         run: npm run build:backend
 
@@ -52,3 +47,48 @@ jobs:
           --require-approval never
           -c newsApiSecretArn=${{ secrets.NEWS_API_SECRET_ARN }}
           -c claudeApiSecretArn=${{ secrets.CLAUDE_API_SECRET_ARN }}
+
+      - name: Read stack outputs
+        id: stack_outputs
+        shell: bash
+        run: |
+          API_BASE_URL=$(aws cloudformation describe-stacks \
+            --stack-name NewsDigestStack \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiBaseUrl'].OutputValue" \
+            --output text)
+          FRONTEND_BUCKET=$(aws cloudformation describe-stacks \
+            --stack-name NewsDigestStack \
+            --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue" \
+            --output text)
+          FRONTEND_DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
+            --stack-name NewsDigestStack \
+            --query "Stacks[0].Outputs[?OutputKey=='FrontendDistributionId'].OutputValue" \
+            --output text)
+          FRONTEND_URL=$(aws cloudformation describe-stacks \
+            --stack-name NewsDigestStack \
+            --query "Stacks[0].Outputs[?OutputKey=='FrontendUrl'].OutputValue" \
+            --output text)
+
+          echo "api_base_url=$API_BASE_URL" >> "$GITHUB_OUTPUT"
+          echo "frontend_bucket=$FRONTEND_BUCKET" >> "$GITHUB_OUTPUT"
+          echo "frontend_distribution_id=$FRONTEND_DISTRIBUTION_ID" >> "$GITHUB_OUTPUT"
+          echo "frontend_url=$FRONTEND_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Build frontend bundle
+        run: npm run build:frontend
+        env:
+          VITE_API_BASE_URL: ${{ steps.stack_outputs.outputs.api_base_url }}
+
+      - name: Upload frontend assets
+        run: aws s3 sync frontend/dist s3://${{ steps.stack_outputs.outputs.frontend_bucket }} --delete
+
+      - name: Invalidate CloudFront cache
+        run: >
+          aws cloudfront create-invalidation
+          --distribution-id ${{ steps.stack_outputs.outputs.frontend_distribution_id }}
+          --paths "/*"
+
+      - name: Deployment summary
+        run: |
+          echo "API base URL: ${{ steps.stack_outputs.outputs.api_base_url }}"
+          echo "Frontend URL: ${{ steps.stack_outputs.outputs.frontend_url }}"
