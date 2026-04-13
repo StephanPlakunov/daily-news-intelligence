@@ -63,6 +63,11 @@ export function buildDigestUrl(date: string): string {
 async function buildApiError(response: Response, fallbackMessage: string): Promise<Error> {
   try {
     const data = (await response.json()) as { message?: string; error?: string; code?: string };
+
+    if (data.code === "rate_limited") {
+      return new Error("The news provider rate-limited this request. Try again later or use a higher NewsAPI quota.");
+    }
+
     const details = [data.message, data.error].filter((value): value is string => typeof value === "string" && value.length > 0);
 
     if (details.length > 0) {

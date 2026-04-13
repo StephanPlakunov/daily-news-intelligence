@@ -19,6 +19,7 @@ export type StoredDigestItem = {
 export type DigestErrorCode =
   | "invalid_request"
   | "invalid_payload"
+  | "rate_limited"
   | "upstream_dependency_failed"
   | "service_unavailable"
   | "internal_error";
@@ -60,6 +61,10 @@ export function classifyDigestError(error: unknown): { statusCode: number; code:
 
   if (message.includes("No broad news sample") || message.includes("No articles were found")) {
     return { statusCode: 404, code: "invalid_payload" };
+  }
+
+  if (message.includes("status 429") || message.includes("rate limit")) {
+    return { statusCode: 429, code: "rate_limited" };
   }
 
   if (message.includes("News API") || message.includes("Claude API")) {

@@ -15,6 +15,18 @@ function getBerlinTodayDate(): string {
   return formatter.format(new Date());
 }
 
+function getSupportHint(errorMessage: string | null): string {
+  if (!errorMessage) {
+    return "Check that the API is deployed and that `VITE_API_BASE_URL` points to the correct API Gateway URL.";
+  }
+
+  if (errorMessage.includes("rate-limited")) {
+    return "The backend is reachable. This failure came from NewsAPI quota limits rather than a broken deployment.";
+  }
+
+  return "Check that the API is deployed and that `VITE_API_BASE_URL` points to the correct API Gateway URL.";
+}
+
 export default function App() {
   const [digests, setDigests] = useState<DigestItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -162,7 +174,7 @@ export default function App() {
         <section className="status-panel error-panel" role="alert">
           <h2>Unable to load the digest</h2>
           <p>{errorMessage}</p>
-          <p>Check that the API is deployed and that `VITE_API_BASE_URL` points to the correct API Gateway URL.</p>
+          <p>{getSupportHint(errorMessage)}</p>
         </section>
       ) : null}
 

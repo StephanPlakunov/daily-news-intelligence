@@ -138,6 +138,13 @@ runTest("classifyDigestError marks invalid dates as client errors", () => {
 
 runTest("classifyDigestError marks upstream failures as bad gateway", () => {
   assert.deepEqual(classifyDigestError(new Error("News API request failed with status 429")), {
+    statusCode: 429,
+    code: "rate_limited"
+  });
+});
+
+runTest("classifyDigestError marks non-rate-limited upstream failures as bad gateway", () => {
+  assert.deepEqual(classifyDigestError(new Error("News API request failed with status 500")), {
     statusCode: 502,
     code: "upstream_dependency_failed"
   });
