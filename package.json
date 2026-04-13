@@ -1,0 +1,23 @@
+{
+  "name": "personal-news-digest",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend/lambdas",
+    "infrastructure"
+  ],
+  "scripts": {
+    "install:all": "npm install --workspaces",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "build:frontend": "npm run build --workspace frontend",
+    "build:backend": "npm run build --workspace @news-digest/lambdas",
+    "build:infrastructure": "npm run build --workspace @news-digest/infrastructure",
+    "synth": "npm run synth --workspace @news-digest/infrastructure",
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "npm run test --workspace @news-digest/lambdas",
+    "test:frontend": "npm run test --workspace @news-digest/frontend"
+  }
+}

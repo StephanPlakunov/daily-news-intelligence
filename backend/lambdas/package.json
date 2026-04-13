@@ -1,0 +1,22 @@
+{
+  "name": "@news-digest/lambdas",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "test": "npm run build && node dist/test/runTests.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.674.0",
+    "@aws-sdk/client-secrets-manager": "^3.674.0",
+    "@aws-sdk/lib-dynamodb": "^3.674.0",
+    "@types/aws-lambda": "^8.10.145"
+  },
+  "devDependencies": {
+    "@types/node": "^22.8.1",
+    "typescript": "^5.6.3"
+  }
+}

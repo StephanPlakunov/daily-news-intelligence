@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "outDir": "dist-test",
+    "rootDir": "src",
+    "noEmit": false,
+    "types": ["vite/client", "node"]
+  },
+  "include": ["src/lib/api.ts", "src/test/runTests.ts"],
+  "exclude": []
+}
