@@ -8,7 +8,6 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as s3 from "aws-cdk-lib/aws-s3";
-import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as scheduler from "aws-cdk-lib/aws-scheduler";
 import * as sqs from "aws-cdk-lib/aws-sqs";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
@@ -171,13 +170,6 @@ export class NewsDigestStack extends cdk.Stack {
       ]
     });
 
-    new s3deploy.BucketDeployment(this, "DeployFrontend", {
-      destinationBucket: frontendBucket,
-      distribution: frontendDistribution,
-      distributionPaths: ["/*"],
-      sources: [s3deploy.Source.asset(path.join(__dirname, "../../frontend/dist"))]
-    });
-
     new cloudwatch.Alarm(this, "FetchAndSummarizeErrorsAlarm", {
       metric: fetchAndSummarizeFunction.metricErrors({
         period: cdk.Duration.minutes(5)
@@ -213,6 +205,16 @@ export class NewsDigestStack extends cdk.Stack {
     new cdk.CfnOutput(this, "FrontendUrl", {
       value: `https://${frontendDistribution.distributionDomainName}`,
       description: "CloudFront URL for the hosted frontend"
+    });
+
+    new cdk.CfnOutput(this, "FrontendBucketName", {
+      value: frontendBucket.bucketName,
+      description: "S3 bucket name for frontend assets"
+    });
+
+    new cdk.CfnOutput(this, "FrontendDistributionId", {
+      value: frontendDistribution.distributionId,
+      description: "CloudFront distribution id for frontend invalidations"
     });
   }
 }
